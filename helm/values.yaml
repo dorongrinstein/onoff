@@ -1,0 +1,7 @@
+onoff:
+  gvc: change-to-your-gvc-name
+  workloads: "mario, tetris" 
+  image: "doron/onoff:0.5"
+  action: "ON"
+  name: onoff-on
+  cron_spec: "*/5 * * * *"

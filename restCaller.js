@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-
 function getJson(action) {
     let suspend = true;
     if (action == 'ON') {

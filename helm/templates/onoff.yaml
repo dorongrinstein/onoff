@@ -1,0 +1,66 @@
+kind: identity
+name: {{ .Values.onoff.name }}-identity
+description: identity for onoff workloads to enable the onoff workload to turn on/off workloads in its GVC according to a defined policy
+gvc: {{ .Values.onoff.gvc }}
+tags: {}
+---
+kind: policy
+name: {{ .Values.onoff.name }}-policy
+description: policy to enable the onoff-id to edit workloads in the same GVC as the onoff workload
+tags: {}
+bindings:
+  - permissions:
+      - edit
+    principalLinks:
+      - //gvc/{{ .Values.onoff.gvc }}/identity/{{ .Values.onoff.name }}-identity
+target: all
+targetKind: workload
+targetLinks: []
+---
+kind: workload
+name: {{ .Values.onoff.name }}
+description: onoff
+gvc: {{ .Values.onoff.gvc }}
+tags: {}
+spec:
+  type: cron
+  containers:
+    - name: onoff
+      cpu: 50m
+      env:
+        - name: ACTION
+          value: {{ .Values.onoff.action }}
+        - name: WORKLOADS
+          value: {{ .Values.onoff.workloads }}
+      image: {{ .Values.onoff.image }}
+      inheritEnv: false
+      memory: 128Mi
+  defaultOptions:
+    autoscaling:
+      maxConcurrency: 0
+      maxScale: 1
+      minScale: 1
+      scaleToZeroDelay: 300
+      target: 95
+    capacityAI: false
+    debug: false
+    suspend: true
+    timeoutSeconds: 5
+  firewallConfig:
+    external:
+      inboundAllowCIDR: []
+      outboundAllowCIDR:
+        - 0.0.0.0/0
+      outboundAllowHostname: []
+      outboundAllowPort: []
+    internal:
+      inboundAllowType: none
+      inboundAllowWorkload: []
+  identityLink: //gvc/{{ .Values.onoff.gvc }}/identity/{{ .Values.onoff.name }}-identity
+  job:
+    concurrencyPolicy: Forbid
+    historyLimit: 5
+    restartPolicy: Never
+    schedule: '{{ .Values.onoff.cron_spec }}'
+  localOptions: []
+  supportDynamicTags: false
